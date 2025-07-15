@@ -1,0 +1,189 @@
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.*;
+
+public class trademarket {
+static class stockAdmin {
+String symbol;
+double price;
+stockAdmin(String symbol, double price) {
+this.symbol = symbol;
+this.price = price;
+}
+public String toString() {
+return symbol + " ₹" + price;
+}
+}
+static class stockUser {
+String symbol;
+double price;
+double Quantity;
+stockUser(String symbol, double price, double Quantity) {
+this.symbol = symbol;
+this.price = price;
+this.Quantity = Quantity;
+}
+public String toString() {
+return symbol + " x" + Quantity + " (₹" + price + ")";
+}
+}
+public static void main(String[] args) {
+Scanner sc = new Scanner(System.in);
+double amount = 2000000;
+ArrayList<stockAdmin> stockList = new ArrayList<>();
+ArrayList<stockUser> portfolio = new ArrayList<>();
+Gson gson = new Gson();
+try {
+BufferedReader reader = new BufferedReader(new FileReader("stock_data.json"));
+Map<String,Object> data = gson.fromJson(reader, Map.class);
+Type stockListType = new TypeToken<ArrayList<stockAdmin>>(){}.getType();
+Type portfolioType = new TypeToken<ArrayList<stockUser>>(){}.getType();
+reader = new BufferedReader(new FileReader("stock_data.json"));
+stockList = gson.fromJson(new FileReader("stock_data.json"), Map.class).containsKey("stocks") ?
+gson.fromJson(gson.toJson(((Map)gson.fromJson(new FileReader("stock_data.json"), Map.class)).get("stocks")), stockListType) :
+new ArrayList<>();
+portfolio = gson.fromJson(gson.toJson(((Map)gson.fromJson(new FileReader("stock_data.json"), Map.class)).get("portfolio")), portfolioType);
+amount = ((Number)((Map)gson.fromJson(new FileReader("stock_data.json"), Map.class)).get("amount")).doubleValue();
+System.out.println("Data loaded from stock_data.json");
+} catch (Exception e) {
+System.out.println("Starting with fresh data.");
+}
+System.out.println("----stock market----");
+while (true) {
+System.out.println("----||1.Admin||2.User||----");
+int choice1 = sc.nextInt();
+sc.nextLine();
+switch (choice1) {
+case 1:
+System.out.println("---||1.Add Stock||2.Remove Stock||---");
+int choice2 = sc.nextInt();
+sc.nextLine();
+switch (choice2) {
+case 1:
+System.out.println("Enter no of Stocks to be added:");
+int num1 = sc.nextInt();
+sc.nextLine();
+for (int i = 1; i <= num1; i++) {
+System.out.println("Enter the symbol of stock " + i + ":");
+String sym1 = sc.nextLine().toUpperCase();
+System.out.println("Enter the price of stock " + i + ":");
+double pri1 = sc.nextDouble();
+sc.nextLine();
+stockList.add(new stockAdmin(sym1, pri1));
+System.out.println("Stock added successfully by the company to the trade market.");
+}
+break;
+case 2:
+if(stockList.isEmpty()){
+System.out.println("There is no stocks are in the trade market.");
+}else{
+System.out.println("Enter no of stocks to be removed:");
+int num2 = sc.nextInt();
+sc.nextLine();
+for (int i = 1; i <= num2; i++) {
+System.out.println("Enter the symbol of stock " + i + ":");
+String sym2 = sc.nextLine().toUpperCase();
+stockList.removeIf(s -> s.symbol.equals(sym2));
+}
+System.out.println("Stock removed successfully by the company to the trade market.");
+}
+break;
+}
+break;
+case 2:
+System.out.println("---||1.Buy Stock||2.Sell Stock||3.View Portfolio||---");
+int choice3 = sc.nextInt();
+sc.nextLine();
+switch (choice3) {
+case 1:
+System.out.println("Stocks in the trade market:");
+for (stockAdmin s : stockList) {
+System.out.println(s);
+}
+System.out.println("Enter the symbol of stock to buy:");
+String sym3 = sc.nextLine().toUpperCase();
+System.out.println("Enter quantity to buy:");
+double Quan1 = sc.nextDouble();
+sc.nextLine();
+double pri2 = 0;
+for (stockAdmin s : stockList) {
+if (s.symbol.equals(sym3)) {
+pri2 = s.price;
+break;
+}
+}
+if (pri2 == 0) {
+System.out.println("Stock symbol not found.");
+} else {
+double tot1 = pri2 * Quan1;
+if (tot1 > amount) {
+System.out.println("Not sufficient balance in your portfolio.");
+} else {
+amount = amount - tot1;
+portfolio.add(new stockUser(sym3, pri2, Quan1));
+System.out.println("Stock bought successfully.");
+}
+}
+break;
+case 2:
+if (portfolio.isEmpty()) {
+System.out.println("There is no stock to sell in your portfolio.");
+} else {
+System.out.println("Enter the symbol of the stock to sell:");
+String sym4 = sc.nextLine().toUpperCase();
+System.out.println("Enter the quantity of the stock to sell:");
+double Quan2 = sc.nextDouble();
+sc.nextLine();
+for (stockUser s : portfolio) {
+if (s.symbol.equals(sym4)) {
+if (Quan2 > s.Quantity) {
+System.out.println("Low stock available. You have only " + s.Quantity);
+} else {
+s.Quantity -= Quan2;
+double pri3 = 0;
+for (stockAdmin a : stockList) {
+if (a.symbol.equals(sym4)) {
+pri3 = a.price;
+break;
+}
+}
+double tot2 = (pri3 + 20) * Quan2;
+amount += tot2;
+System.out.println("Stock sold successfully. You earned ₹" + tot2);
+}
+}else
+{
+System.out.println("Stock symbol not found in portfolio.");
+}
+}
+}
+break;
+case 3:
+System.out.println("Amount: ₹" + amount);
+System.out.println("Portfolio: " + portfolio);
+break;
+}
+break;
+}
+System.out.println("Do you want to exit? (yes/no)");
+String exit = sc.nextLine().toLowerCase();
+if (exit.equals("yes")) {
+try {
+FileWriter writer = new FileWriter("stock_data.json");
+writer.write("{\n");
+writer.write("\"stocks\": " + gson.toJson(stockList) + ",\n");
+writer.write("\"portfolio\": " + gson.toJson(portfolio) + ",\n");
+writer.write("\"amount\": " + amount + "\n");
+writer.write("}");
+writer.close();
+System.out.println("Data saved to stock_data.json");
+} catch (IOException e) {
+System.out.println("Error saving data: " + e.getMessage());
+}
+break;
+}
+}
+}
+}
