@@ -1,0 +1,67 @@
+import java.util.*;
+public class studentgradetracker{
+public static void main(String[] args){
+Scanner sc=new Scanner(System.in);
+System.out.println("Enter no of classes:");
+int num1=sc.nextInt();
+for(int i=0;i<num1;i++){
+   System.out.println("class"+(i+1));
+   System.out.println("Enter number of students in the class:");
+   int num2=sc.nextInt();
+   String[] names=new String[num2];
+   int[] marks=new int[num2];
+   String[] grades=new String[num2];
+   float sum=0;
+   int max=marks[0];
+   int maxindex=0;
+   int min=marks[0];
+   int minindex=0;
+   for(int j=0;j<num2;j++){
+       System.out.println("Enter student"+(j+1)+" name:");
+       names[j]=sc.next();
+       System.out.println("Enter student"+(j+1)+" mark:");
+       marks[j]=sc.nextInt();
+       if(marks[j]>550){
+       grades[j]="O";
+       }
+       else if(marks[j]>500){
+       grades[j]="A+";
+       }
+       else if(marks[j]>450){
+       grades[j]="A";
+       } 
+       else if(marks[j]>400){
+       grades[j]="B+";
+       }
+       else if(marks[j]>350){
+       grades[j]="B";
+       }
+       else if(marks[j]>300){
+       grades[j]="C";
+       }
+       else if(marks[j]<210){
+       grades[j]="F";
+       }       
+       else{
+       System.out.println("Mark must be within the total....."); 
+       }       
+       System.out.println("Name:"+names[j]+",Mark:"+marks[j]+",Grade:"+grades[j]);
+       sum+=marks[j];
+       if(marks[j]>max){
+       max=marks[j];
+       maxindex=j;
+       }
+       if(marks[j]<max){
+       min=marks[j];
+       minindex=j;
+       }
+}
+float average=sum/num2;
+System.out.println("average of class"+(i+1)+":"+average);
+System.out.println("highest score:");
+System.out.println("name:"+names[maxindex]+",mark:"+marks[maxindex]+",grade:"+grades[maxindex]);
+System.out.println("lowest score:");
+System.out.println("name:"+names[minindex]+",mark:"+marks[minindex]+",grade:"+grades[minindex]);
+}   
+}
+}
